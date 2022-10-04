@@ -11,7 +11,7 @@ function loadImage(e) {
 
     if(!isFileImage(file)) {
         alertError('Please select an image');
-        return
+        return;
     };
 
     // get original dimentions
@@ -26,6 +26,37 @@ function loadImage(e) {
     filename.innerText = file.name;
     outputPath.innerText = path.join(os.homedir(), 'imageresizer');
 };
+
+// Send image to main
+function sendImage(e) {
+    e.preventDefault();
+    const width = widthInput.value;
+    const height = heightInput.value;
+    const imgPath = img.files[0].path;
+    
+    // Check if there is an image
+    if (!img.files[0]) {
+        alertError('Please upload an image');
+        return;
+    }
+    // Check if we have a width and height input
+    if (width === '' || height === '') {
+        alertError('Please fill in a height and width');
+        return;
+    }
+
+    //Send to main using ipcRenderer
+    ipcRenderer.send('image:resize', {
+        imgPath,
+        width,
+        height
+    })
+};
+
+// Catch image:done success event
+ipcRenderer.on('image:done', () => {
+    alertSuccess(`Image resized to ${widthInput.value} x ${heightInput.value}`);
+})
 
 // Make sure file is img
 function isFileImage(file) {
